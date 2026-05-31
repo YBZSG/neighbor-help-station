@@ -19,7 +19,7 @@ export default function Topbar({ title, onNavigate, onSearch, onNotice }) {
   }
 
   return (
-    <header className="sticky top-0 z-20 -mx-4 mb-5 border-b border-white/80 bg-campus-bg/90 px-4 py-3 backdrop-blur md:-mx-8 md:px-8 xl:ml-64">
+    <header className="sticky top-0 z-20 mb-5 border-b border-white/80 bg-campus-bg/90 px-5 py-3 backdrop-blur sm:px-6 md:px-8 xl:ml-64">
       <div className="flex items-center justify-between gap-4">
         <div>
           <p className="text-xs font-bold text-campus-green">明德校园 · 互助服务站</p>
