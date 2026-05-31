@@ -15,6 +15,7 @@ import {
   Trophy,
   Users
 } from "lucide-react";
+import { useState } from "react";
 import { useGsapReveal } from "../hooks/useGsapReveal";
 import { mockRankList } from "../data/mockUser";
 import HeroSection from "../components/dashboard/HeroSection";
@@ -22,6 +23,7 @@ import StatCard from "../components/dashboard/StatCard";
 import Card from "../components/common/Card";
 import Badge from "../components/common/Badge";
 import Button from "../components/common/Button";
+import Modal from "../components/common/Modal";
 
 const activityTone = {
   求助互助: "blue",
@@ -143,11 +145,61 @@ function VolunteerRank({ onNavigate }) {
   );
 }
 
-function EmergencyStrip({ onNavigate }) {
+function EmergencyActionModal({ action, onClose }) {
+  const configs = {
+    alarm: {
+      title: "一键报警",
+      status: "已报警",
+      tone: "text-red-600",
+      icon: Siren,
+      desc: "系统已记录当前位置并生成应急编号，社区值守人员会尽快跟进。",
+      detail: "应急编号：NH-110-2026 · 响应队列：紧急"
+    },
+    medical: {
+      title: "医疗急救",
+      status: "已呼叫急救",
+      tone: "text-red-600",
+      icon: HeartPulse,
+      desc: "已同步校医务室值班端，请保持电话畅通，并在安全位置等待帮助。",
+      detail: "校医务室：025-8899 1200 · 建议同时联系辅导员"
+    },
+    grid: {
+      title: "联系网格员",
+      status: "已通知网格员",
+      tone: "text-campus-green",
+      icon: Users,
+      desc: "网格员会根据你所在区域进行电话确认或到场协助。",
+      detail: "值班网格员：陈老师 · 联系方式：138****8901"
+    }
+  };
+
+  if (!action) return null;
+  const config = configs[action];
+  const Icon = config.icon;
+
+  return (
+    <Modal open={Boolean(action)} title={config.title} onClose={onClose}>
+      <div className="text-center">
+        <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-3xl bg-red-50 text-red-500">
+          <Icon size={38} />
+        </div>
+        <h3 className={`mt-5 text-3xl font-black ${config.tone}`}>{config.status}</h3>
+        <p className="mx-auto mt-3 max-w-md text-sm leading-7 text-campus-muted">{config.desc}</p>
+        <div className="mt-5 rounded-2xl bg-slate-50 p-4 text-sm font-bold text-campus-ink">{config.detail}</div>
+        <div className="mt-6 flex justify-center gap-3">
+          <Button onClick={onClose}>我知道了</Button>
+          <Button variant="ghost" onClick={onClose}>稍后查看记录</Button>
+        </div>
+      </div>
+    </Modal>
+  );
+}
+
+function EmergencyStrip({ onEmergencyAction }) {
   const actions = [
-    { label: "一键报警", icon: Siren, route: "emergency" },
-    { label: "医疗急救", icon: HeartPulse, route: "emergency" },
-    { label: "联系网格员", icon: Users, route: "help" }
+    { label: "一键报警", icon: Siren, action: "alarm" },
+    { label: "医疗急救", icon: HeartPulse, action: "medical" },
+    { label: "联系网格员", icon: Users, action: "grid" }
   ];
 
   return (
@@ -169,7 +221,7 @@ function EmergencyStrip({ onNavigate }) {
               <button
                 key={action.label}
                 type="button"
-                onClick={() => onNavigate(action.route)}
+                onClick={() => onEmergencyAction(action.action)}
                 className="flex items-center gap-2 rounded-2xl bg-white px-4 py-3 text-sm font-black text-campus-ink shadow-sm transition hover:-translate-y-0.5 hover:text-red-500"
               >
                 <Icon size={18} className="text-red-500" />
@@ -210,6 +262,7 @@ function ConvenienceServices({ onNavigate }) {
 }
 
 export default function Dashboard({ state, onNavigate }) {
+  const [emergencyAction, setEmergencyAction] = useState(null);
   const scope = useGsapReveal([state.items.length, state.materials.length, state.help.length, state.volunteer.length]);
   const helpCount = state.help.filter((item) => item.status !== "已完成").length;
   const volunteerHours = state.volunteer.reduce((sum, item) => sum + Math.round(item.current * item.hours), 0);
@@ -234,7 +287,7 @@ export default function Dashboard({ state, onNavigate }) {
         </div>
       </div>
 
-      <EmergencyStrip onNavigate={onNavigate} />
+      <EmergencyStrip onEmergencyAction={setEmergencyAction} />
 
       <Card className="gsap-reveal">
         <div className="flex flex-wrap items-center justify-between gap-4">
@@ -259,6 +312,7 @@ export default function Dashboard({ state, onNavigate }) {
           </div>
         </div>
       </Card>
+      <EmergencyActionModal action={emergencyAction} onClose={() => setEmergencyAction(null)} />
     </div>
   );
 }
