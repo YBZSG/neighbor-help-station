@@ -1,11 +1,14 @@
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { Building2, HeartHandshake } from "lucide-react";
 import { useGSAP } from "@gsap/react";
 import { gsap } from "../animations/gsapSetup";
 import { routes } from "../constants/routes";
+import Modal from "../components/common/Modal";
+import Button from "../components/common/Button";
 
 export default function Sidebar({ current, onNavigate }) {
   const scope = useRef(null);
+  const [aboutOpen, setAboutOpen] = useState(false);
 
   useGSAP(
     () => {
@@ -50,10 +53,27 @@ export default function Sidebar({ current, onNavigate }) {
         <Building2 className="mb-3 text-campus-green" size={26} />
         <p className="text-sm font-black text-campus-ink">共建友善校园</p>
         <p className="mt-1 text-xs leading-5 text-campus-muted">从一次借伞、一本书、一小时志愿开始。</p>
-        <button type="button" onClick={() => onNavigate("volunteer")} className="mt-3 rounded-xl bg-white px-3 py-1.5 text-xs font-bold text-campus-green shadow-sm">
+        <button type="button" onClick={() => setAboutOpen(true)} className="mt-3 rounded-xl bg-white px-3 py-1.5 text-xs font-bold text-campus-green shadow-sm">
           了解更多
         </button>
       </div>
+      <Modal open={aboutOpen} title="共建友善校园" onClose={() => setAboutOpen(false)}>
+        <div className="space-y-4">
+          <p className="text-sm leading-7 text-campus-muted">
+            邻里互助站把闲置物品、学习资料、临时求助和公益服务集中在一个入口里，让同学之间的帮助更容易被看见、被响应、被记录。
+          </p>
+          <div className="grid gap-3 sm:grid-cols-3">
+            {["共享闲置", "响应求助", "参与志愿"].map((item) => (
+              <div key={item} className="rounded-2xl bg-campus-greenSoft p-4 text-center text-sm font-black text-campus-green">
+                {item}
+              </div>
+            ))}
+          </div>
+          <div className="flex justify-end">
+            <Button onClick={() => setAboutOpen(false)}>知道了</Button>
+          </div>
+        </div>
+      </Modal>
     </aside>
   );
 }
