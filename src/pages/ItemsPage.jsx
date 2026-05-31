@@ -1,0 +1,34 @@
+import { useState } from "react";
+import { Plus } from "lucide-react";
+import { useFilteredList } from "../hooks/useFilteredList";
+import { useGsapReveal } from "../hooks/useGsapReveal";
+import Button from "../components/common/Button";
+import EmptyState from "../components/common/EmptyState";
+import Modal from "../components/common/Modal";
+import ItemCard from "../components/items/ItemCard";
+import ItemFilters from "../components/items/ItemFilters";
+import ItemForm from "../components/items/ItemForm";
+
+export default function ItemsPage({ items, revealedContacts, onReveal, onAddItem }) {
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const [category, setCategory] = useState("全部");
+  const [type, setType] = useState("全部");
+  const filtered = useFilteredList(items, { query, category, type, keys: ["name", "description", "area", "owner"] });
+  const scope = useGsapReveal([filtered.length, query, category, type]);
+
+  return (
+    <div ref={scope} className="space-y-5">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <ItemFilters query={query} setQuery={setQuery} category={category} setCategory={setCategory} type={type} setType={setType} />
+        <Button icon={Plus} onClick={() => setOpen(true)}>发布闲置物品</Button>
+      </div>
+      {filtered.length ? (
+        <div className="grid gap-5 lg:grid-cols-2">{filtered.map((item) => <ItemCard key={item.id} item={item} revealed={revealedContacts.includes(item.id)} onReveal={onReveal} />)}</div>
+      ) : <EmptyState title="没有找到匹配物品" />}
+      <Modal open={open} title="发布闲置物品" onClose={() => setOpen(false)}>
+        <ItemForm onSubmit={(data, error) => { if (onAddItem(data, error)) setOpen(false); }} />
+      </Modal>
+    </div>
+  );
+}
