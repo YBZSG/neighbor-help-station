@@ -5,7 +5,8 @@ export const storageKeys = {
   emergency: "nhs_emergency",
   volunteer: "nhs_volunteer",
   favorites: "nhs_favorites",
-  applications: "nhs_applications"
+  applications: "nhs_applications",
+  feedback: "nhs_feedback"
 };
 
 export function createId(prefix) {

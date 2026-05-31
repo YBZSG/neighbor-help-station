@@ -32,6 +32,7 @@ export default function App() {
   const [volunteer, setVolunteer] = useLocalStorage(storageKeys.volunteer, mockVolunteer);
   const [favorites, setFavorites] = useLocalStorage(storageKeys.favorites, []);
   const [applications, setApplications] = useLocalStorage(storageKeys.applications, []);
+  const [feedback, setFeedback] = useLocalStorage(storageKeys.feedback, []);
   const [revealedContacts, setRevealedContacts] = useState([]);
   const pageRef = useRef(null);
 
@@ -147,6 +148,24 @@ export default function App() {
     return true;
   }
 
+  function handleAddFeedback(data) {
+    if (!data.title.trim() || !data.content.trim()) {
+      notify("请填写反馈标题和内容");
+      return false;
+    }
+    setFeedback((prev) => [
+      ...prev,
+      {
+        ...data,
+        id: createId("feedback"),
+        time: nowText(),
+        status: "已收到"
+      }
+    ]);
+    notify("反馈已提交");
+    return true;
+  }
+
   const state = { items, materials, help, emergency, volunteer };
 
   const pages = {
@@ -156,7 +175,7 @@ export default function App() {
     help: <HelpPage help={help} onAddHelp={handleAddHelp} onRespondHelp={(id) => updateHelpStatus(id, "已响应", "已响应该求助")} onCompleteHelp={(id) => updateHelpStatus(id, "已完成", "互助已完成")} />,
     emergency: <EmergencyPage emergency={emergency} onAddEmergency={handleAddEmergency} />,
     volunteer: <VolunteerPage volunteer={volunteer} joined={applications.filter((item) => item.type === "公益报名").map((item) => volunteer.find((v) => v.name === item.title)?.id || item.title)} onJoin={handleJoinVolunteer} onAddVolunteer={handleAddVolunteer} />,
-    profile: <ProfilePage items={items} help={help} favorites={favorites} applications={applications} />,
+    profile: <ProfilePage items={items} help={help} favorites={favorites} applications={applications} feedback={feedback} onAddFeedback={handleAddFeedback} />,
     rules: <RulesPage />,
     search: <SearchResultsPage keyword={searchKeyword} state={state} onNavigate={setCurrent} />
   };
