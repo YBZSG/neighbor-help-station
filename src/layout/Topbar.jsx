@@ -6,6 +6,10 @@ export default function Topbar({ title, onNavigate, onSearch, onNotice }) {
   const [keyword, setKeyword] = useState("");
   const [noticeOpen, setNoticeOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(3);
+  const [regionOpen, setRegionOpen] = useState(false);
+  const [region, setRegion] = useState(() => localStorage.getItem("nhs_region") || "阳光花园小区");
+
+  const regions = ["阳光花园小区", "明德校园南区", "明德校园北区", "图书馆服务点", "学生中心广场"];
 
   const notices = [
     { id: 1, title: "你的资料申请已记录", desc: "高数期末重点整理可在资料共享页查看。", time: "刚刚", route: "materials" },
@@ -16,6 +20,12 @@ export default function Topbar({ title, onNavigate, onSearch, onNotice }) {
   function submitSearch(event) {
     event.preventDefault();
     onSearch(keyword);
+  }
+
+  function chooseRegion(nextRegion) {
+    setRegion(nextRegion);
+    localStorage.setItem("nhs_region", nextRegion);
+    setRegionOpen(false);
   }
 
   return (
@@ -40,14 +50,33 @@ export default function Topbar({ title, onNavigate, onSearch, onNotice }) {
         </form>
 
         <div className="flex items-center gap-3">
-          <button
-            type="button"
-            className="hidden items-center gap-2 rounded-2xl border border-slate-100 bg-white px-3 py-2 text-xs font-bold text-campus-ink shadow-soft transition hover:border-campus-green hover:text-campus-green lg:flex"
-          >
-            <MapPin size={16} className="text-campus-green" />
-            阳光花园小区
-            <ChevronDown size={14} />
-          </button>
+          <div className="relative hidden lg:block">
+            <button
+              type="button"
+              onClick={() => setRegionOpen((open) => !open)}
+              className="flex items-center gap-2 rounded-2xl border border-slate-100 bg-white px-3 py-2 text-xs font-bold text-campus-ink shadow-soft transition hover:border-campus-green hover:text-campus-green"
+            >
+              <MapPin size={16} className="text-campus-green" />
+              {region}
+              <ChevronDown size={14} className={`transition ${regionOpen ? "rotate-180" : ""}`} />
+            </button>
+            {regionOpen ? (
+              <div className="absolute right-0 top-12 z-50 w-52 rounded-2xl border border-slate-100 bg-white p-2 shadow-2xl">
+                {regions.map((item) => (
+                  <button
+                    key={item}
+                    type="button"
+                    onClick={() => chooseRegion(item)}
+                    className={`block w-full rounded-xl px-3 py-2 text-left text-sm font-bold transition ${
+                      item === region ? "bg-campus-greenSoft text-campus-green" : "text-campus-muted hover:bg-slate-50 hover:text-campus-ink"
+                    }`}
+                  >
+                    {item}
+                  </button>
+                ))}
+              </div>
+            ) : null}
+          </div>
           <button
             type="button"
             onClick={() => onNavigate("rules")}
