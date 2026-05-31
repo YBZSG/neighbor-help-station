@@ -3,7 +3,7 @@ import Badge from "../common/Badge";
 import Button from "../common/Button";
 import Card from "../common/Card";
 
-export default function MaterialCard({ material, favorite, onFavorite, onApply }) {
+export default function MaterialCard({ material, favorite, onFavorite, onApply, onOpenDetail }) {
   return (
     <Card className="gsap-reveal flex h-full flex-col">
       <div className="flex items-start justify-between gap-3">
@@ -20,9 +20,12 @@ export default function MaterialCard({ material, favorite, onFavorite, onApply }
         </button>
       </div>
       <p className="mt-3 flex-1 text-sm leading-6 text-campus-muted">{material.description}</p>
-      <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-4 text-sm">
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 pt-4 text-sm">
         <span className="font-semibold text-campus-muted">{material.uploader} · {material.type} · {material.count} 次</span>
-        <Button variant="secondary" icon={Download} onClick={() => onApply(material)}>申请获取</Button>
+        <div className="flex gap-2">
+          <Button variant="ghost" onClick={() => onOpenDetail(material)}>详情</Button>
+          <Button variant="secondary" icon={Download} onClick={() => onApply(material)}>申请获取</Button>
+        </div>
       </div>
     </Card>
   );

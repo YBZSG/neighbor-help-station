@@ -1,9 +1,10 @@
 import { MapPin } from "lucide-react";
 import Badge from "../common/Badge";
+import Button from "../common/Button";
 import Card from "../common/Card";
 import UrgencyBadge from "./UrgencyBadge";
 
-export default function EmergencyCard({ item }) {
+export default function EmergencyCard({ item, onOpenDetail }) {
   const pulse = item.urgency === "紧急" ? "animate-pulse" : "";
   return (
     <Card className={`gsap-reveal ${pulse}`}>
@@ -17,6 +18,9 @@ export default function EmergencyCard({ item }) {
       <div className="mt-4 flex flex-wrap items-center gap-4 text-sm font-semibold text-campus-muted">
         <span className="inline-flex items-center gap-1"><MapPin size={16} />{item.place}</span>
         <span>{item.createdAt}</span>
+      </div>
+      <div className="mt-4 border-t border-slate-100 pt-4">
+        <Button variant="ghost" onClick={() => onOpenDetail(item)}>查看详情</Button>
       </div>
     </Card>
   );

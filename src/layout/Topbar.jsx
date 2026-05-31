@@ -1,21 +1,22 @@
 import { useState } from "react";
 import { Bell, ChevronDown, Clock3, MapPin, Search, ShieldCheck } from "lucide-react";
 import { mockUser } from "../data/mockUser";
+import { regions } from "../utils/region";
 
-export default function Topbar({ title, onNavigate, onSearch, onNotice }) {
+export default function Topbar({
+  title,
+  onNavigate,
+  onSearch,
+  region,
+  onRegionChange,
+  notifications,
+  onReadAllNotifications,
+  onOpenNotification
+}) {
   const [keyword, setKeyword] = useState("");
   const [noticeOpen, setNoticeOpen] = useState(false);
-  const [unreadCount, setUnreadCount] = useState(3);
   const [regionOpen, setRegionOpen] = useState(false);
-  const [region, setRegion] = useState(() => localStorage.getItem("nhs_region") || "阳光花园小区");
-
-  const regions = ["阳光花园小区", "明德校园南区", "明德校园北区", "图书馆服务点", "学生中心广场"];
-
-  const notices = [
-    { id: 1, title: "你的资料申请已记录", desc: "高数期末重点整理可在资料共享页查看。", time: "刚刚", route: "materials" },
-    { id: 2, title: "有新的临时求助", desc: "教学楼附近有同学需要打印帮助。", time: "12 分钟前", route: "emergency" },
-    { id: 3, title: "公益活动报名提醒", desc: "图书馆整理活动本周六开始签到。", time: "30 分钟前", route: "volunteer" }
-  ];
+  const unreadCount = notifications.filter((item) => !item.read).length;
 
   function submitSearch(event) {
     event.preventDefault();
@@ -23,8 +24,7 @@ export default function Topbar({ title, onNavigate, onSearch, onNotice }) {
   }
 
   function chooseRegion(nextRegion) {
-    setRegion(nextRegion);
-    localStorage.setItem("nhs_region", nextRegion);
+    onRegionChange(nextRegion);
     setRegionOpen(false);
   }
 
@@ -77,6 +77,7 @@ export default function Topbar({ title, onNavigate, onSearch, onNotice }) {
               </div>
             ) : null}
           </div>
+
           <button
             type="button"
             onClick={() => onNavigate("rules")}
@@ -85,63 +86,62 @@ export default function Topbar({ title, onNavigate, onSearch, onNotice }) {
             <ShieldCheck size={16} />
             实名可信
           </button>
+
           <div className="relative">
-          <button
-            onClick={() => {
-              setNoticeOpen((open) => !open);
-            }}
-            className="relative rounded-2xl bg-white p-3 text-campus-muted shadow-soft transition hover:text-campus-green"
-            aria-label="通知"
-          >
-            <Bell size={18} />
-            {unreadCount ? (
-              <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-black text-white">{unreadCount}</span>
-            ) : null}
-          </button>
-          {noticeOpen ? (
-            <div className="absolute right-0 top-14 z-50 w-86 max-w-[calc(100vw-2rem)] rounded-2xl border border-slate-100 bg-white p-3 shadow-2xl">
-              <div className="mb-2 flex items-center justify-between px-2 py-1">
-                <div>
-                  <p className="text-sm font-black text-campus-ink">通知中心</p>
-                  <p className="text-xs text-campus-muted">{unreadCount ? `${unreadCount} 条未读消息` : "暂无未读消息"}</p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setUnreadCount(0)}
-                  className="rounded-xl bg-campus-greenSoft px-3 py-1.5 text-xs font-bold text-campus-green transition hover:bg-emerald-100"
-                >
-                  全部已读
-                </button>
-              </div>
-              <div className="space-y-2">
-                {notices.map((notice) => (
+            <button
+              onClick={() => setNoticeOpen((open) => !open)}
+              className="relative rounded-2xl bg-white p-3 text-campus-muted shadow-soft transition hover:text-campus-green"
+              aria-label="通知"
+            >
+              <Bell size={18} />
+              {unreadCount ? (
+                <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-black text-white">{unreadCount}</span>
+              ) : null}
+            </button>
+            {noticeOpen ? (
+              <div className="absolute right-0 top-14 z-50 w-86 max-w-[calc(100vw-2rem)] rounded-2xl border border-slate-100 bg-white p-3 shadow-2xl">
+                <div className="mb-2 flex items-center justify-between px-2 py-1">
+                  <div>
+                    <p className="text-sm font-black text-campus-ink">通知中心</p>
+                    <p className="text-xs text-campus-muted">{unreadCount ? `${unreadCount} 条未读消息` : "暂无未读消息"}</p>
+                  </div>
                   <button
-                    key={notice.id}
                     type="button"
-                    onClick={() => {
-                      setNoticeOpen(false);
-                      setUnreadCount((count) => Math.max(0, count - 1));
-                      onNavigate(notice.route);
-                    }}
-                    className="block w-full rounded-2xl bg-slate-50 p-3 text-left transition hover:bg-campus-greenSoft"
+                    onClick={onReadAllNotifications}
+                    className="rounded-xl bg-campus-greenSoft px-3 py-1.5 text-xs font-bold text-campus-green transition hover:bg-emerald-100"
                   >
-                    <div className="flex items-start gap-3">
-                      <span className="mt-1 h-2 w-2 rounded-full bg-red-500" />
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm font-black text-campus-ink">{notice.title}</p>
-                        <p className="mt-1 line-clamp-2 text-xs leading-5 text-campus-muted">{notice.desc}</p>
-                        <p className="mt-2 flex items-center gap-1 text-xs font-semibold text-campus-muted">
-                          <Clock3 size={13} />
-                          {notice.time}
-                        </p>
-                      </div>
-                    </div>
+                    全部已读
                   </button>
-                ))}
+                </div>
+                <div className="max-h-96 space-y-2 overflow-auto">
+                  {notifications.map((notice) => (
+                    <button
+                      key={notice.id}
+                      type="button"
+                      onClick={() => {
+                        setNoticeOpen(false);
+                        onOpenNotification(notice);
+                      }}
+                      className="block w-full rounded-2xl bg-slate-50 p-3 text-left transition hover:bg-campus-greenSoft"
+                    >
+                      <div className="flex items-start gap-3">
+                        <span className={`mt-1 h-2 w-2 rounded-full ${notice.read ? "bg-slate-300" : "bg-red-500"}`} />
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-sm font-black text-campus-ink">{notice.title}</p>
+                          <p className="mt-1 line-clamp-2 text-xs leading-5 text-campus-muted">{notice.desc}</p>
+                          <p className="mt-2 flex items-center gap-1 text-xs font-semibold text-campus-muted">
+                            <Clock3 size={13} />
+                            {notice.time}
+                          </p>
+                        </div>
+                      </div>
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
-          ) : null}
+            ) : null}
           </div>
+
           <button
             type="button"
             onClick={() => onNavigate("profile")}

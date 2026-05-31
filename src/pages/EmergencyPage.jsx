@@ -11,7 +11,7 @@ import Select from "../components/common/Select";
 import EmergencyCard from "../components/emergency/EmergencyCard";
 import EmergencyForm from "../components/emergency/EmergencyForm";
 
-export default function EmergencyPage({ emergency, onAddEmergency }) {
+export default function EmergencyPage({ emergency, onAddEmergency, onOpenDetail }) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [urgency, setUrgency] = useState("全部");
@@ -25,7 +25,7 @@ export default function EmergencyPage({ emergency, onAddEmergency }) {
         <Select value={urgency} onChange={(e) => setUrgency(e.target.value)} options={["全部", ...urgencyLevels]} />
         <Button icon={Plus} onClick={() => setOpen(true)}>发布临时求助</Button>
       </div>
-      {filtered.length ? <div className="grid gap-5 lg:grid-cols-2">{filtered.map((item) => <EmergencyCard key={item.id} item={item} />)}</div> : <EmptyState title="暂无临时求助" />}
+      {filtered.length ? <div className="grid gap-5 lg:grid-cols-2">{filtered.map((item) => <EmergencyCard key={item.id} item={item} onOpenDetail={onOpenDetail} />)}</div> : <EmptyState title="暂无临时求助" />}
       <Modal open={open} title="发布临时求助" onClose={() => setOpen(false)}>
         <EmergencyForm onSubmit={(data, error) => { if (onAddEmergency(data, error)) setOpen(false); }} />
       </Modal>

@@ -9,7 +9,7 @@ import ItemCard from "../components/items/ItemCard";
 import ItemFilters from "../components/items/ItemFilters";
 import ItemForm from "../components/items/ItemForm";
 
-export default function ItemsPage({ items, revealedContacts, onReveal, onAddItem }) {
+export default function ItemsPage({ items, revealedContacts, onReveal, onAddItem, onOpenDetail }) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("全部");
@@ -24,7 +24,7 @@ export default function ItemsPage({ items, revealedContacts, onReveal, onAddItem
         <Button icon={Plus} onClick={() => setOpen(true)}>发布闲置物品</Button>
       </div>
       {filtered.length ? (
-        <div className="grid gap-5 lg:grid-cols-2">{filtered.map((item) => <ItemCard key={item.id} item={item} revealed={revealedContacts.includes(item.id)} onReveal={onReveal} />)}</div>
+        <div className="grid gap-5 lg:grid-cols-2">{filtered.map((item) => <ItemCard key={item.id} item={item} revealed={revealedContacts.includes(item.id)} onReveal={onReveal} onOpenDetail={onOpenDetail} />)}</div>
       ) : <EmptyState title="没有找到匹配物品" />}
       <Modal open={open} title="发布闲置物品" onClose={() => setOpen(false)}>
         <ItemForm onSubmit={(data, error) => { if (onAddItem(data, error)) setOpen(false); }} />

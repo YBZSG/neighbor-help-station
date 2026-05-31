@@ -6,7 +6,7 @@ import Modal from "../components/common/Modal";
 import VolunteerCard from "../components/volunteer/VolunteerCard";
 import VolunteerForm from "../components/volunteer/VolunteerForm";
 
-export default function VolunteerPage({ volunteer, joined, onJoin, onAddVolunteer }) {
+export default function VolunteerPage({ volunteer, joined, onJoin, onAddVolunteer, onOpenDetail }) {
   const [open, setOpen] = useState(false);
   const scope = useGsapReveal([volunteer.length, joined.length]);
 
@@ -20,7 +20,7 @@ export default function VolunteerPage({ volunteer, joined, onJoin, onAddVoluntee
         <Button icon={Plus} onClick={() => setOpen(true)}>发布公益活动</Button>
       </div>
       <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-        {volunteer.map((item) => <VolunteerCard key={item.id} item={item} joined={joined.includes(item.id)} onJoin={onJoin} />)}
+        {volunteer.map((item) => <VolunteerCard key={item.id} item={item} joined={joined.includes(item.id)} onJoin={onJoin} onOpenDetail={onOpenDetail} />)}
       </div>
       <Modal open={open} title="发布公益活动" onClose={() => setOpen(false)}>
         <VolunteerForm onSubmit={(data, error) => { if (onAddVolunteer(data, error)) setOpen(false); }} />

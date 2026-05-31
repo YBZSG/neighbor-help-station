@@ -5,7 +5,7 @@ import Badge from "../common/Badge";
 import Button from "../common/Button";
 import Card from "../common/Card";
 
-export default function ItemCard({ item, revealed, onReveal }) {
+export default function ItemCard({ item, revealed, onReveal, onOpenDetail }) {
   return (
     <Card className="gsap-reveal flex h-full flex-col">
       <div className="flex gap-4">
@@ -24,13 +24,16 @@ export default function ItemCard({ item, revealed, onReveal }) {
         <span>位置：{item.area}</span>
         <span>诚信分：{item.creditRequired}+</span>
       </div>
-      <div className="mt-4 flex items-center justify-between gap-3 border-t border-slate-100 pt-4">
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-4">
         <p className="text-sm font-bold text-campus-ink">
           {item.owner} · {revealed ? maskContact(item.contact) : "联系方式已隐藏"}
         </p>
-        <Button variant={revealed ? "secondary" : "primary"} icon={revealed ? Eye : Handshake} onClick={() => onReveal(item.id)}>
-          {revealed ? "已显示" : "申请联系"}
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="ghost" onClick={() => onOpenDetail(item)}>详情</Button>
+          <Button variant={revealed ? "secondary" : "primary"} icon={revealed ? Eye : Handshake} onClick={() => onReveal(item.id)}>
+            {revealed ? "已显示" : "申请联系"}
+          </Button>
+        </div>
       </div>
     </Card>
   );

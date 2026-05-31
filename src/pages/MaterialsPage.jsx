@@ -9,7 +9,7 @@ import MaterialCard from "../components/materials/MaterialCard";
 import MaterialFilters from "../components/materials/MaterialFilters";
 import MaterialForm from "../components/materials/MaterialForm";
 
-export default function MaterialsPage({ materials, favorites, onFavorite, onApply, onAddMaterial }) {
+export default function MaterialsPage({ materials, favorites, onFavorite, onApply, onAddMaterial, onOpenDetail }) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("全部");
@@ -23,7 +23,7 @@ export default function MaterialsPage({ materials, favorites, onFavorite, onAppl
         <Button icon={Plus} onClick={() => setOpen(true)}>发布学习资料</Button>
       </div>
       {filtered.length ? (
-        <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">{filtered.map((material) => <MaterialCard key={material.id} material={material} favorite={favorites.includes(material.id)} onFavorite={onFavorite} onApply={onApply} />)}</div>
+        <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">{filtered.map((material) => <MaterialCard key={material.id} material={material} favorite={favorites.includes(material.id)} onFavorite={onFavorite} onApply={onApply} onOpenDetail={onOpenDetail} />)}</div>
       ) : <EmptyState title="没有找到匹配资料" />}
       <Modal open={open} title="发布学习资料" onClose={() => setOpen(false)}>
         <MaterialForm onSubmit={(data, error) => { if (onAddMaterial(data, error)) setOpen(false); }} />
