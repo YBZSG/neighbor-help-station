@@ -1,5 +1,5 @@
 import { useRef } from "react";
-import { HeartHandshake } from "lucide-react";
+import { Building2, HeartHandshake } from "lucide-react";
 import { useGSAP } from "@gsap/react";
 import { gsap } from "../animations/gsapSetup";
 import { routes } from "../constants/routes";
@@ -15,20 +15,21 @@ export default function Sidebar({ current, onNavigate }) {
   );
 
   return (
-    <aside ref={scope} className="fixed left-0 top-0 z-30 hidden h-screen w-64 border-r border-white/80 bg-white/85 p-5 shadow-soft backdrop-blur xl:block">
+    <aside ref={scope} className="fixed left-0 top-0 z-30 hidden h-screen w-64 border-r border-white/80 bg-white/90 p-5 shadow-soft backdrop-blur xl:block">
       <div className="mb-8 flex items-center gap-3">
         <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-campus-green text-white">
           <HeartHandshake size={23} />
         </div>
         <div>
           <p className="text-lg font-black text-campus-ink">邻里互助站</p>
-          <p className="text-xs font-semibold text-campus-muted">校园公益服务台</p>
+          <p className="text-xs font-semibold text-campus-muted">互帮互助 · 温暖邻里</p>
         </div>
       </div>
+
       <nav className="space-y-2">
         {routes.map((route) => {
           const Icon = route.icon;
-          const active = current === route.key;
+          const active = current === route.key || (current === "search" && route.key === "dashboard");
           return (
             <button
               key={route.key}
@@ -44,6 +45,15 @@ export default function Sidebar({ current, onNavigate }) {
           );
         })}
       </nav>
+
+      <div className="absolute bottom-5 left-5 right-5 overflow-hidden rounded-2xl bg-gradient-to-br from-campus-greenSoft to-campus-blueSoft p-4">
+        <Building2 className="mb-3 text-campus-green" size={26} />
+        <p className="text-sm font-black text-campus-ink">共建友善校园</p>
+        <p className="mt-1 text-xs leading-5 text-campus-muted">从一次借伞、一本书、一小时志愿开始。</p>
+        <button type="button" onClick={() => onNavigate("volunteer")} className="mt-3 rounded-xl bg-white px-3 py-1.5 text-xs font-bold text-campus-green shadow-sm">
+          了解更多
+        </button>
+      </div>
     </aside>
   );
 }

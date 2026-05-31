@@ -1,6 +1,5 @@
 import {
   BookOpen,
-  ClipboardList,
   HandHeart,
   HeartHandshake,
   Home,
