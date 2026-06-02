@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { Suspense, lazy, useRef, useState } from "react";
 import { useGSAP } from "@gsap/react";
 import { animatePageEnter } from "./animations/pageTransitions";
 import { createId, storageKeys } from "./utils/storage";
@@ -24,6 +24,8 @@ import VolunteerPage from "./pages/VolunteerPage";
 import ProfilePage from "./pages/ProfilePage";
 import RulesPage from "./pages/RulesPage";
 import SearchResultsPage from "./pages/SearchResultsPage";
+
+const DataScreenPage = lazy(() => import("./pages/DataScreenPage"));
 
 const seedNotifications = [
   { id: "notice_1", title: "资料申请已记录", desc: "高数期末重点整理可在资料共享页查看。", time: "刚刚", route: "materials", read: false },
@@ -271,6 +273,7 @@ export default function App() {
 
   const pages = {
     dashboard: <Dashboard state={filteredState} onNavigate={setCurrent} />,
+    datav: <DataScreenPage state={filteredState} region={region} />,
     items: <ItemsPage items={filteredState.items} revealedContacts={revealedContacts} onReveal={handleReveal} onAddItem={handleAddItem} onOpenDetail={(item) => openDetail("item", item)} />,
     materials: <MaterialsPage materials={filteredState.materials} favorites={favorites} onFavorite={handleFavorite} onApply={handleMaterialApply} onAddMaterial={handleAddMaterial} onOpenDetail={(item) => openDetail("material", item)} />,
     help: <HelpPage help={filteredState.help} onAddHelp={handleAddHelp} onRespondHelp={(id) => updateHelpStatus(id, "已响应", "已响应该求助")} onCompleteHelp={(id) => updateHelpStatus(id, "已完成", "互助已完成")} onOpenDetail={(item) => openDetail("help", item)} />,
@@ -296,7 +299,9 @@ export default function App() {
       clearToast={() => setToast("")}
     >
       <div ref={pageRef} className="page-motion">
-        {pages[current]}
+        <Suspense fallback={<div className="page-shell"><section className="rounded-2xl bg-white p-6 text-sm font-bold text-campus-muted shadow-soft">数据大屏加载中...</section></div>}>
+          {pages[current]}
+        </Suspense>
       </div>
       <DetailModal detail={detail} onClose={() => setDetail(null)} />
     </MainLayout>

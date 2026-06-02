@@ -1,10 +1,10 @@
 import { routes } from "../constants/routes";
 
-const mobileKeys = ["dashboard", "items", "materials", "help", "profile"];
+const mobileKeys = ["dashboard", "datav", "items", "materials", "help", "profile"];
 
 export default function MobileNav({ current, onNavigate }) {
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-40 grid grid-cols-5 border-t border-slate-100 bg-white/95 px-2 py-2 shadow-2xl backdrop-blur xl:hidden">
+    <nav className="fixed bottom-0 left-0 right-0 z-40 grid grid-cols-6 border-t border-slate-100 bg-white/95 px-2 py-2 shadow-2xl backdrop-blur xl:hidden">
       {routes
         .filter((route) => mobileKeys.includes(route.key))
         .map((route) => {

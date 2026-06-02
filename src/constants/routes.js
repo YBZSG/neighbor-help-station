@@ -1,4 +1,5 @@
 import {
+  BarChart3,
   BookOpen,
   HandHeart,
   HeartHandshake,
@@ -11,6 +12,7 @@ import {
 
 export const routes = [
   { key: "dashboard", label: "首页", icon: Home },
+  { key: "datav", label: "数据大屏", icon: BarChart3 },
   { key: "items", label: "物品共享", icon: PackageOpen },
   { key: "materials", label: "资料共享", icon: BookOpen },
   { key: "help", label: "生活互助", icon: HeartHandshake },
