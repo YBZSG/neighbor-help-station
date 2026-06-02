@@ -1,12 +1,13 @@
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
+import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 
-const zones = [
-  { name: "宿舍区", x: -2.4, z: -1.1, color: 0x2fa782, height: 0.7 },
-  { name: "教学楼", x: -0.7, z: -0.3, color: 0x2b7cc7, height: 1.15 },
-  { name: "图书馆", x: 1.1, z: -0.8, color: 0xf0a23b, height: 0.9 },
-  { name: "服务站", x: 0.2, z: 1.1, color: 0x1f9a73, height: 1.35 },
-  { name: "运动场", x: 2.35, z: 0.75, color: 0xe75f5f, height: 0.45 }
+const baseZones = [
+  { name: "宿舍区", desc: "借物最多", x: -2.4, z: -1.1, color: 0x2fa782, dot: "bg-emerald-500", baseHeight: 0.7 },
+  { name: "教学楼", desc: "求助集中", x: -0.7, z: -0.3, color: 0x2b7cc7, dot: "bg-blue-500", baseHeight: 1.15 },
+  { name: "图书馆", desc: "资料共享", x: 1.1, z: -0.8, color: 0xf0a23b, dot: "bg-amber-500", baseHeight: 0.9 },
+  { name: "服务站", desc: "响应中心", x: 0.2, z: 1.1, color: 0x1f9a73, dot: "bg-green-600", baseHeight: 1.35 },
+  { name: "运动场", desc: "活动报名", x: 2.35, z: 0.75, color: 0xe75f5f, dot: "bg-red-400", baseHeight: 0.45 }
 ];
 
 function makeMaterial(color, opacity = 1) {
@@ -19,8 +20,14 @@ function makeMaterial(color, opacity = 1) {
   });
 }
 
-export default function CampusThreeMap({ intensity = 1 }) {
+export default function CampusThreeMap({ intensity = 1, zoneStats = [], selectedZone = "全部校区" }) {
   const hostRef = useRef(null);
+  const zones = baseZones.map((zone) => {
+    const stat = zoneStats.find((item) => item.name === zone.name);
+    const active = selectedZone === "全部校区" || selectedZone === zone.name;
+    const height = stat ? Math.max(0.28, 0.35 + stat.score / 100) : zone.baseHeight;
+    return { ...zone, ...stat, active, height: active ? height : Math.max(0.22, height * 0.38) };
+  });
 
   useEffect(() => {
     if (!hostRef.current) return undefined;
@@ -38,6 +45,16 @@ export default function CampusThreeMap({ intensity = 1 }) {
     renderer.setSize(host.clientWidth, host.clientHeight);
     renderer.shadowMap.enabled = true;
     host.appendChild(renderer.domElement);
+
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.08;
+    controls.enablePan = false;
+    controls.minDistance = 4.4;
+    controls.maxDistance = 8.5;
+    controls.minPolarAngle = Math.PI / 5;
+    controls.maxPolarAngle = Math.PI / 2.35;
+    controls.target.set(0, 0.25, 0);
 
     const group = new THREE.Group();
     scene.add(group);
@@ -68,7 +85,7 @@ export default function CampusThreeMap({ intensity = 1 }) {
     zones.forEach((zone, index) => {
       const block = new THREE.Mesh(
         new THREE.BoxGeometry(0.78, zone.height, 0.78),
-        makeMaterial(zone.color, 0.9)
+        makeMaterial(zone.color, zone.active ? 0.92 : 0.34)
       );
       block.position.set(zone.x, zone.height / 2, zone.z);
       block.castShadow = true;
@@ -76,8 +93,8 @@ export default function CampusThreeMap({ intensity = 1 }) {
       group.add(block);
 
       const ring = new THREE.Mesh(
-        new THREE.TorusGeometry(0.34 + index * 0.015, 0.018, 10, 48),
-        makeMaterial(zone.color, 0.45)
+        new THREE.TorusGeometry(zone.active ? 0.4 + index * 0.015 : 0.28, 0.018, 10, 48),
+        makeMaterial(zone.color, zone.active ? 0.5 : 0.16)
       );
       ring.rotation.x = Math.PI / 2;
       ring.position.set(zone.x, 0.08, zone.z);
@@ -106,12 +123,12 @@ export default function CampusThreeMap({ intensity = 1 }) {
     let raf = 0;
     const animate = () => {
       frame += 0.01;
-      group.rotation.y = Math.sin(frame * 0.45) * 0.1 - 0.18;
       beacon.position.y = 1.55 + Math.sin(frame * 2.4) * 0.08;
       pulseDots.forEach((ring, index) => {
         const scale = 1 + Math.sin(frame * 2 + index) * 0.08 * intensity;
         ring.scale.setScalar(scale);
       });
+      controls.update();
       renderer.render(scene, camera);
       raf = window.requestAnimationFrame(animate);
     };
@@ -128,6 +145,7 @@ export default function CampusThreeMap({ intensity = 1 }) {
     return () => {
       window.cancelAnimationFrame(raf);
       window.removeEventListener("resize", handleResize);
+      controls.dispose();
       host.removeChild(renderer.domElement);
       scene.traverse((object) => {
         if (object.geometry) object.geometry.dispose();
@@ -138,18 +156,28 @@ export default function CampusThreeMap({ intensity = 1 }) {
       });
       renderer.dispose();
     };
-  }, [intensity]);
+  }, [intensity, selectedZone, JSON.stringify(zoneStats)]);
 
   return (
     <div className="relative h-[360px] min-h-[320px] overflow-hidden rounded-2xl border border-emerald-100 bg-gradient-to-br from-white to-emerald-50">
       <div ref={hostRef} className="absolute inset-0" aria-label="校园互助三维数据地图" />
-      <div className="pointer-events-none absolute left-4 top-4 rounded-2xl bg-white/85 px-4 py-3 text-sm font-black text-campus-ink shadow-sm backdrop-blur">
-        三维服务态势
+      <div className="pointer-events-none absolute left-4 top-4 rounded-2xl bg-white/90 px-4 py-3 shadow-sm backdrop-blur">
+        <p className="text-sm font-black text-campus-ink">校园服务点分布图</p>
+        <p className="mt-1 text-xs font-semibold text-campus-muted">柱子越高代表越活跃，按住画面可拖动旋转</p>
+      </div>
+      <div className="pointer-events-none absolute right-4 top-4 hidden w-36 space-y-2 rounded-2xl bg-white/85 p-3 text-xs font-bold text-campus-muted shadow-sm backdrop-blur sm:block">
+        {zones.map((zone) => (
+          <div key={zone.name} className="flex items-center gap-2">
+            <span className={`h-2.5 w-2.5 rounded-full ${zone.dot}`} />
+            <span className={zone.active ? "text-campus-ink" : ""}>{zone.name}</span>
+          </div>
+        ))}
       </div>
       <div className="pointer-events-none absolute bottom-4 left-4 right-4 grid grid-cols-2 gap-2 text-xs font-bold text-campus-muted sm:grid-cols-5">
         {zones.map((zone) => (
-          <span key={zone.name} className="rounded-xl bg-white/80 px-3 py-2 text-center shadow-sm backdrop-blur">
-            {zone.name}
+          <span key={zone.name} className={`rounded-xl px-3 py-2 text-center shadow-sm backdrop-blur ${zone.active ? "bg-white text-campus-green ring-1 ring-campus-green/25" : "bg-white/70 opacity-70"}`}>
+            <span className="block text-campus-ink">{zone.name}</span>
+            <span className="mt-0.5 block text-[11px]">{zone.desc}</span>
           </span>
         ))}
       </div>
