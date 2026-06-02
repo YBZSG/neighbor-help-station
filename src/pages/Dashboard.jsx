@@ -273,8 +273,8 @@ export default function Dashboard({ state, onNavigate }) {
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard label="社区成员" value={2845} icon={Users} onClick={() => onNavigate("profile")} />
-        <StatCard label="物品共享" value={state.items.length * 60 + 2} icon={PackageOpen} tone="blue" onClick={() => onNavigate("items")} />
-        <StatCard label="互助求助" value={helpCount * 42 + 8} icon={HeartPulse} tone="orange" onClick={() => onNavigate("help")} />
+        <StatCard label="物品共享" value={state.items.length} icon={PackageOpen} tone="blue" onClick={() => onNavigate("items")} />
+        <StatCard label="互助求助" value={helpCount} icon={HeartPulse} tone="orange" onClick={() => onNavigate("help")} />
         <StatCard label="志愿服务时长" value={volunteerHours || 1256} icon={Heart} tone="orange" onClick={() => onNavigate("volunteer")} />
       </div>
 
