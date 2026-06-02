@@ -8,27 +8,47 @@ import CampusThreeMap from "../components/datav/CampusThreeMap";
 
 const districtProfiles = {
   全部校区: [
-    { name: "宿舍区", score: 74, status: "南北宿舍区汇总", active: true },
-    { name: "教学楼", score: 68, status: "课堂周边求助", active: true },
-    { name: "图书馆", score: 82, status: "资料共享活跃", active: true },
-    { name: "服务站", score: 90, status: "响应和报名集中", active: true },
-    { name: "运动场", score: 42, status: "活动报名平稳", active: true }
+    { name: "宿舍区", weight: 0.26, status: "南北宿舍区汇总", active: true },
+    { name: "教学楼", weight: 0.18, status: "课堂周边求助", active: true },
+    { name: "图书馆", weight: 0.24, status: "资料共享活跃", active: true },
+    { name: "服务站", weight: 0.22, status: "响应和报名集中", active: true },
+    { name: "运动场", weight: 0.1, status: "活动报名平稳", active: true }
   ],
   南区: [
-    { name: "宿舍区", score: 88, status: "南区宿舍借物较多", active: true },
-    { name: "教学楼", score: 62, status: "南区教学楼求助", active: true },
-    { name: "图书馆", score: 78, status: "靠近图书馆服务点", active: true },
-    { name: "服务站", score: 70, status: "南区服务台响应", active: true },
-    { name: "运动场", score: 28, status: "关联较少", active: false }
+    { name: "宿舍区", weight: 0.36, status: "南区宿舍借物较多", active: true },
+    { name: "教学楼", weight: 0.16, status: "南区教学楼求助", active: true },
+    { name: "图书馆", weight: 0.26, status: "靠近图书馆服务点", active: true },
+    { name: "服务站", weight: 0.18, status: "南区服务台响应", active: true },
+    { name: "运动场", weight: 0.04, status: "关联较少", active: false }
   ],
   北区: [
-    { name: "宿舍区", score: 84, status: "北区宿舍互助", active: true },
-    { name: "教学楼", score: 74, status: "北区教学楼咨询", active: true },
-    { name: "图书馆", score: 36, status: "资料申请较少", active: false },
-    { name: "服务站", score: 66, status: "北区服务台协调", active: true },
-    { name: "运动场", score: 82, status: "体育馆活动较多", active: true }
+    { name: "宿舍区", weight: 0.32, status: "北区宿舍互助", active: true },
+    { name: "教学楼", weight: 0.24, status: "北区教学楼咨询", active: true },
+    { name: "图书馆", weight: 0.08, status: "资料申请较少", active: false },
+    { name: "服务站", weight: 0.16, status: "北区服务台协调", active: true },
+    { name: "运动场", weight: 0.2, status: "体育馆活动较多", active: true }
   ]
 };
+
+function splitCount(total, profiles) {
+  if (total <= 0) return profiles.map((item) => ({ ...item, count: 0, score: 0 }));
+  const raw = profiles.map((item) => ({ ...item, rawCount: total * item.weight }));
+  const rounded = raw.map((item) => ({ ...item, count: Math.floor(item.rawCount) }));
+  let rest = total - rounded.reduce((sum, item) => sum + item.count, 0);
+  rounded
+    .sort((a, b) => b.rawCount - b.count - (a.rawCount - a.count))
+    .forEach((item) => {
+      if (rest > 0) {
+        item.count += 1;
+        rest -= 1;
+      }
+    });
+  const maxCount = Math.max(...rounded.map((item) => item.count), 1);
+  return profiles.map((profile) => {
+    const item = rounded.find((entry) => entry.name === profile.name);
+    return { ...profile, count: item.count, score: Math.max(8, Math.round((item.count / maxCount) * 100)) };
+  });
+}
 
 function StatTile({ icon: Icon, label, value, note, tone = "green" }) {
   const colors = {
@@ -67,12 +87,9 @@ export default function DataScreenPage({ state, region }) {
 
   const zoneStats = useMemo(() => {
     const base = districtProfiles[region] || districtProfiles["全部校区"];
-    const activityBoost = Math.min(18, metrics.itemCount * 2 + metrics.materialCount + metrics.helpCount * 3);
-    return base.map((item) => ({
-      ...item,
-      score: Math.min(100, item.score + (item.active ? Math.round(activityBoost / 2) : Math.round(activityBoost / 8)))
-    }));
-  }, [region, metrics.itemCount, metrics.materialCount, metrics.helpCount]);
+    const total = metrics.itemCount + metrics.materialCount + metrics.helpCount + state.volunteer.length;
+    return splitCount(total, base);
+  }, [region, metrics.itemCount, metrics.materialCount, metrics.helpCount, state.volunteer.length]);
 
   const activity = [
     { text: `${region} 有新的互助记录`, time: "刚刚" },
@@ -124,7 +141,7 @@ export default function DataScreenPage({ state, region }) {
             <div className="flex items-center justify-between">
               <div>
               <p className="text-lg font-black text-campus-ink">区域活跃度</p>
-                <p className="mt-1 text-sm text-campus-muted">对应左侧分布图里的校园区域</p>
+                <p className="mt-1 text-sm text-campus-muted">按当前地区记录数拆分，合计等于本页总记录</p>
               </div>
               <MapPin className="text-campus-green" size={22} />
             </div>
@@ -133,7 +150,7 @@ export default function DataScreenPage({ state, region }) {
                 <div key={point.name}>
                   <div className="flex items-center justify-between text-sm">
                     <span className="font-black text-campus-ink">{point.name}</span>
-                    <span className="font-bold text-campus-muted">{point.status}</span>
+                    <span className="font-bold text-campus-muted">{point.count} 条 · {point.status}</span>
                   </div>
                   <div className="mt-2 h-2 overflow-hidden rounded-full bg-slate-100">
                     <div className="signal-line h-full rounded-full bg-campus-green" style={{ width: `${point.score}%` }} />
