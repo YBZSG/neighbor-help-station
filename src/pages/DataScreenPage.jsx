@@ -5,6 +5,7 @@ import { gsap } from "../animations/gsapSetup";
 import Card from "../components/common/Card";
 import Badge from "../components/common/Badge";
 import CampusThreeMap from "../components/datav/CampusThreeMap";
+import { getCampusMetrics } from "../utils/metrics";
 
 const districtProfiles = {
   全部校区: [
@@ -76,20 +77,12 @@ function StatTile({ icon: Icon, label, value, note, tone = "green" }) {
 
 export default function DataScreenPage({ state, region }) {
   const scope = useRef(null);
-  const metrics = useMemo(() => {
-    const itemCount = state.items.length;
-    const materialCount = state.materials.length;
-    const helpCount = state.help.length + state.emergency.length;
-    const volunteerHours = state.volunteer.reduce((sum, item) => sum + item.current * item.hours, 0);
-    const responseCount = state.help.filter((item) => item.status !== "待响应").length + state.emergency.filter((item) => item.status !== "待响应").length;
-    return { itemCount, materialCount, helpCount, volunteerHours, responseCount };
-  }, [state]);
+  const metrics = useMemo(() => getCampusMetrics(state, region), [state, region]);
 
   const zoneStats = useMemo(() => {
     const base = districtProfiles[region] || districtProfiles["全部校区"];
-    const total = metrics.itemCount + metrics.materialCount + metrics.helpCount + state.volunteer.length;
-    return splitCount(total, base);
-  }, [region, metrics.itemCount, metrics.materialCount, metrics.helpCount, state.volunteer.length]);
+    return splitCount(metrics.totalRecords, base);
+  }, [region, metrics.totalRecords]);
 
   const activity = [
     { text: `${region} 有新的互助记录`, time: "刚刚" },
@@ -127,7 +120,7 @@ export default function DataScreenPage({ state, region }) {
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatTile icon={BarChart3} label="物品共享" value={metrics.itemCount} note="正在流转的闲置物品" />
         <StatTile icon={Activity} label="资料共享" value={metrics.materialCount} note="可申请的学习资料" tone="blue" />
-        <StatTile icon={RadioTower} label="求助信号" value={metrics.helpCount} note={`${metrics.responseCount} 条已有响应`} tone="orange" />
+        <StatTile icon={RadioTower} label="求助信号" value={metrics.helpCount} note="待响应和处理中求助" tone="orange" />
         <StatTile icon={Clock3} label="志愿时长" value={metrics.volunteerHours} note="累计服务小时" tone="red" />
       </div>
 

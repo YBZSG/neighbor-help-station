@@ -89,7 +89,7 @@ export default function App() {
     materials,
     help: filterByRegion(help, normalizedRegion),
     emergency: filterByRegion(emergency, normalizedRegion),
-    volunteer: filterByRegion(volunteer, normalizedRegion)
+    volunteer
   };
 
   useGSAP(
@@ -277,7 +277,7 @@ export default function App() {
   }
 
   const pages = {
-    dashboard: <Dashboard state={filteredState} onNavigate={setCurrent} />,
+    dashboard: <Dashboard state={filteredState} region={normalizedRegion} onNavigate={setCurrent} />,
     datav: <DataScreenPage state={filteredState} region={normalizedRegion} />,
     items: <ItemsPage items={filteredState.items} revealedContacts={revealedContacts} onReveal={handleReveal} onAddItem={handleAddItem} onOpenDetail={(item) => openDetail("item", item)} />,
     materials: <MaterialsPage materials={filteredState.materials} favorites={favorites} onFavorite={handleFavorite} onApply={handleMaterialApply} onAddMaterial={handleAddMaterial} onOpenDetail={(item) => openDetail("material", item)} />,

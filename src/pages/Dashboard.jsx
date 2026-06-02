@@ -24,6 +24,7 @@ import Card from "../components/common/Card";
 import Badge from "../components/common/Badge";
 import Button from "../components/common/Button";
 import Modal from "../components/common/Modal";
+import { getCampusMetrics } from "../utils/metrics";
 
 const activityTone = {
   求助互助: "blue",
@@ -261,21 +262,20 @@ function ConvenienceServices({ onNavigate }) {
   );
 }
 
-export default function Dashboard({ state, onNavigate }) {
+export default function Dashboard({ state, region, onNavigate }) {
   const [emergencyAction, setEmergencyAction] = useState(null);
   const scope = useGsapReveal([state.items.length, state.materials.length, state.help.length, state.volunteer.length]);
-  const helpCount = state.help.filter((item) => item.status !== "已完成").length;
-  const volunteerHours = state.volunteer.reduce((sum, item) => sum + Math.round(item.current * item.hours), 0);
+  const metrics = getCampusMetrics(state, region);
 
   return (
     <div ref={scope} className="page-shell space-y-5">
       <HeroSection onNavigate={onNavigate} />
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard label="社区成员" value={2845} icon={Users} onClick={() => onNavigate("profile")} />
-        <StatCard label="物品共享" value={state.items.length} icon={PackageOpen} tone="blue" onClick={() => onNavigate("items")} />
-        <StatCard label="互助求助" value={helpCount} icon={HeartPulse} tone="orange" onClick={() => onNavigate("help")} />
-        <StatCard label="志愿服务时长" value={volunteerHours || 1256} icon={Heart} tone="orange" onClick={() => onNavigate("volunteer")} />
+        <StatCard label="社区成员" value={metrics.members} icon={Users} onClick={() => onNavigate("profile")} />
+        <StatCard label="物品共享" value={metrics.itemCount} icon={PackageOpen} tone="blue" onClick={() => onNavigate("items")} />
+        <StatCard label="互助求助" value={metrics.helpCount} icon={HeartPulse} tone="orange" onClick={() => onNavigate("help")} />
+        <StatCard label="志愿服务时长" value={metrics.volunteerHours} icon={Heart} tone="orange" onClick={() => onNavigate("volunteer")} />
       </div>
 
       <div className="grid gap-5 xl:grid-cols-[1.1fr_1fr_.9fr]">
