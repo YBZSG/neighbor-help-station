@@ -20,11 +20,11 @@ function makeMaterial(color, opacity = 1) {
   });
 }
 
-export default function CampusThreeMap({ intensity = 1, zoneStats = [], selectedZone = "全部校区" }) {
+export default function CampusThreeMap({ intensity = 1, zoneStats = [], region = "全部校区" }) {
   const hostRef = useRef(null);
   const zones = baseZones.map((zone) => {
     const stat = zoneStats.find((item) => item.name === zone.name);
-    const active = selectedZone === "全部校区" || selectedZone === zone.name;
+    const active = stat?.active ?? true;
     const height = stat ? Math.max(0.28, 0.35 + stat.score / 100) : zone.baseHeight;
     return { ...zone, ...stat, active, height: active ? height : Math.max(0.22, height * 0.38) };
   });
@@ -112,18 +112,10 @@ export default function CampusThreeMap({ intensity = 1, zoneStats = [], selected
     ];
     group.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(points), routeMaterial));
 
-    const beacon = new THREE.Mesh(
-      new THREE.SphereGeometry(0.16, 32, 32),
-      makeMaterial(0xff7a4d)
-    );
-    beacon.position.set(0.2, 1.65, 1.1);
-    group.add(beacon);
-
     let frame = 0;
     let raf = 0;
     const animate = () => {
       frame += 0.01;
-      beacon.position.y = 1.55 + Math.sin(frame * 2.4) * 0.08;
       pulseDots.forEach((ring, index) => {
         const scale = 1 + Math.sin(frame * 2 + index) * 0.08 * intensity;
         ring.scale.setScalar(scale);
@@ -156,14 +148,15 @@ export default function CampusThreeMap({ intensity = 1, zoneStats = [], selected
       });
       renderer.dispose();
     };
-  }, [intensity, selectedZone, JSON.stringify(zoneStats)]);
+  }, [intensity, region, JSON.stringify(zoneStats)]);
 
   return (
     <div className="relative h-[360px] min-h-[320px] overflow-hidden rounded-2xl border border-emerald-100 bg-gradient-to-br from-white to-emerald-50">
       <div ref={hostRef} className="absolute inset-0" aria-label="校园互助三维数据地图" />
       <div className="pointer-events-none absolute left-4 top-4 rounded-2xl bg-white/90 px-4 py-3 shadow-sm backdrop-blur">
         <p className="text-sm font-black text-campus-ink">校园服务点分布图</p>
-        <p className="mt-1 text-xs font-semibold text-campus-muted">柱子越高代表越活跃，按住画面可拖动旋转</p>
+        <p className="mt-1 text-xs font-semibold text-campus-muted">{region} · 柱子越高代表该设施越活跃</p>
+        <p className="mt-1 text-xs font-semibold text-campus-muted">按住画面可以拖动旋转</p>
       </div>
       <div className="pointer-events-none absolute right-4 top-4 hidden w-36 space-y-2 rounded-2xl bg-white/85 p-3 text-xs font-bold text-campus-muted shadow-sm backdrop-blur sm:block">
         {zones.map((zone) => (

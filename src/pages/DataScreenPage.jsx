@@ -6,57 +6,27 @@ import Card from "../components/common/Card";
 import Badge from "../components/common/Badge";
 import CampusThreeMap from "../components/datav/CampusThreeMap";
 
-const zoneMap = {
-  南苑: "宿舍区",
-  北苑: "宿舍区",
-  图书馆: "图书馆",
-  学生中心: "服务站",
-  教学楼: "教学楼",
-  体育馆: "运动场"
-};
-
-const zoneProfiles = {
+const districtProfiles = {
   全部校区: [
-    { name: "宿舍区", score: 74, status: "借物和生活求助较多" },
-    { name: "教学楼", score: 68, status: "打印和咨询较集中" },
-    { name: "图书馆", score: 82, status: "资料共享最活跃" },
-    { name: "服务站", score: 90, status: "响应和报名集中" },
-    { name: "运动场", score: 42, status: "活动报名平稳" }
+    { name: "宿舍区", score: 74, status: "南北宿舍区汇总", active: true },
+    { name: "教学楼", score: 68, status: "课堂周边求助", active: true },
+    { name: "图书馆", score: 82, status: "资料共享活跃", active: true },
+    { name: "服务站", score: 90, status: "响应和报名集中", active: true },
+    { name: "运动场", score: 42, status: "活动报名平稳", active: true }
   ],
-  宿舍区: [
-    { name: "宿舍区", score: 95, status: "当前选中区域" },
-    { name: "教学楼", score: 38, status: "关联求助较少" },
-    { name: "图书馆", score: 34, status: "资料申请较少" },
-    { name: "服务站", score: 52, status: "可协调响应" },
-    { name: "运动场", score: 24, status: "活动记录较少" }
+  南区: [
+    { name: "宿舍区", score: 88, status: "南区宿舍借物较多", active: true },
+    { name: "教学楼", score: 62, status: "南区教学楼求助", active: true },
+    { name: "图书馆", score: 78, status: "靠近图书馆服务点", active: true },
+    { name: "服务站", score: 70, status: "南区服务台响应", active: true },
+    { name: "运动场", score: 28, status: "关联较少", active: false }
   ],
-  教学楼: [
-    { name: "宿舍区", score: 35, status: "借物需求较少" },
-    { name: "教学楼", score: 92, status: "当前选中区域" },
-    { name: "图书馆", score: 58, status: "资料申请联动" },
-    { name: "服务站", score: 45, status: "等待服务响应" },
-    { name: "运动场", score: 22, status: "活动记录较少" }
-  ],
-  图书馆: [
-    { name: "宿舍区", score: 30, status: "生活求助较少" },
-    { name: "教学楼", score: 54, status: "课程资料联动" },
-    { name: "图书馆", score: 96, status: "当前选中区域" },
-    { name: "服务站", score: 48, status: "可协助借还" },
-    { name: "运动场", score: 18, status: "活动记录较少" }
-  ],
-  服务站: [
-    { name: "宿舍区", score: 50, status: "待协调借物" },
-    { name: "教学楼", score: 42, status: "咨询转接中" },
-    { name: "图书馆", score: 46, status: "资料服务联动" },
-    { name: "服务站", score: 98, status: "当前选中区域" },
-    { name: "运动场", score: 36, status: "活动报名对接" }
-  ],
-  运动场: [
-    { name: "宿舍区", score: 28, status: "借物需求较少" },
-    { name: "教学楼", score: 26, status: "求助较少" },
-    { name: "图书馆", score: 20, status: "资料记录较少" },
-    { name: "服务站", score: 44, status: "志愿协调中" },
-    { name: "运动场", score: 90, status: "当前选中区域" }
+  北区: [
+    { name: "宿舍区", score: 84, status: "北区宿舍互助", active: true },
+    { name: "教学楼", score: 74, status: "北区教学楼咨询", active: true },
+    { name: "图书馆", score: 36, status: "资料申请较少", active: false },
+    { name: "服务站", score: 66, status: "北区服务台协调", active: true },
+    { name: "运动场", score: 82, status: "体育馆活动较多", active: true }
   ]
 };
 
@@ -86,7 +56,6 @@ function StatTile({ icon: Icon, label, value, note, tone = "green" }) {
 
 export default function DataScreenPage({ state, region }) {
   const scope = useRef(null);
-  const selectedZone = zoneMap[region] || region || "全部校区";
   const metrics = useMemo(() => {
     const itemCount = state.items.length;
     const materialCount = state.materials.length;
@@ -97,17 +66,17 @@ export default function DataScreenPage({ state, region }) {
   }, [state]);
 
   const zoneStats = useMemo(() => {
-    const base = zoneProfiles[selectedZone] || zoneProfiles["全部校区"];
+    const base = districtProfiles[region] || districtProfiles["全部校区"];
     const activityBoost = Math.min(18, metrics.itemCount * 2 + metrics.materialCount + metrics.helpCount * 3);
     return base.map((item) => ({
       ...item,
-      score: Math.min(100, item.score + (item.name === selectedZone ? activityBoost : Math.round(activityBoost / 5)))
+      score: Math.min(100, item.score + (item.active ? Math.round(activityBoost / 2) : Math.round(activityBoost / 8)))
     }));
-  }, [selectedZone, metrics.itemCount, metrics.materialCount, metrics.helpCount]);
+  }, [region, metrics.itemCount, metrics.materialCount, metrics.helpCount]);
 
   const activity = [
     { text: `${region} 有新的互助记录`, time: "刚刚" },
-    { text: `${selectedZone} 服务点活跃度已更新`, time: "8 分钟前" },
+    { text: `${region} 服务点活跃度已更新`, time: "8 分钟前" },
     { text: "资料收藏和求助响应已同步", time: "21 分钟前" },
     { text: "志愿报名数据已写入看板", time: "35 分钟前" }
   ];
@@ -147,7 +116,7 @@ export default function DataScreenPage({ state, region }) {
 
       <div className="grid gap-5 xl:grid-cols-[1.15fr_0.85fr]">
         <Card className="gsap-reveal p-4">
-          <CampusThreeMap intensity={Math.max(1, metrics.helpCount / 4)} zoneStats={zoneStats} selectedZone={selectedZone} />
+          <CampusThreeMap intensity={Math.max(1, metrics.helpCount / 4)} zoneStats={zoneStats} region={region} />
         </Card>
 
         <div className="space-y-5">

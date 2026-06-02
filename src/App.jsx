@@ -1,9 +1,9 @@
-import { Suspense, lazy, useRef, useState } from "react";
+import { Suspense, lazy, useEffect, useRef, useState } from "react";
 import { useGSAP } from "@gsap/react";
 import { animatePageEnter } from "./animations/pageTransitions";
 import { createId, storageKeys } from "./utils/storage";
 import { nowText } from "./utils/time";
-import { filterByRegion } from "./utils/region";
+import { filterByRegion, normalizeRegion } from "./utils/region";
 import { routes } from "./constants/routes";
 import { mockItems } from "./data/mockItems";
 import { mockMaterials } from "./data/mockMaterials";
@@ -77,14 +77,19 @@ export default function App() {
   const [region, setRegion] = useLocalStorage(storageKeys.region, "全部校区");
   const [revealedContacts, setRevealedContacts] = useState([]);
   const pageRef = useRef(null);
+  const normalizedRegion = normalizeRegion(region);
+
+  useEffect(() => {
+    if (region !== normalizedRegion) setRegion(normalizedRegion);
+  }, [region, normalizedRegion, setRegion]);
 
   const title = current === "search" ? "搜索结果" : routes.find((route) => route.key === current)?.label || "首页";
   const filteredState = {
-    items: filterByRegion(items, region),
+    items: filterByRegion(items, normalizedRegion),
     materials,
-    help: filterByRegion(help, region),
-    emergency: filterByRegion(emergency, region),
-    volunteer: filterByRegion(volunteer, region)
+    help: filterByRegion(help, normalizedRegion),
+    emergency: filterByRegion(emergency, normalizedRegion),
+    volunteer: filterByRegion(volunteer, normalizedRegion)
   };
 
   useGSAP(
@@ -273,7 +278,7 @@ export default function App() {
 
   const pages = {
     dashboard: <Dashboard state={filteredState} onNavigate={setCurrent} />,
-    datav: <DataScreenPage state={filteredState} region={region} />,
+    datav: <DataScreenPage state={filteredState} region={normalizedRegion} />,
     items: <ItemsPage items={filteredState.items} revealedContacts={revealedContacts} onReveal={handleReveal} onAddItem={handleAddItem} onOpenDetail={(item) => openDetail("item", item)} />,
     materials: <MaterialsPage materials={filteredState.materials} favorites={favorites} onFavorite={handleFavorite} onApply={handleMaterialApply} onAddMaterial={handleAddMaterial} onOpenDetail={(item) => openDetail("material", item)} />,
     help: <HelpPage help={filteredState.help} onAddHelp={handleAddHelp} onRespondHelp={(id) => updateHelpStatus(id, "已响应", "已响应该求助")} onCompleteHelp={(id) => updateHelpStatus(id, "已完成", "互助已完成")} onOpenDetail={(item) => openDetail("help", item)} />,
@@ -290,7 +295,7 @@ export default function App() {
       title={title}
       onNavigate={setCurrent}
       onSearch={handleGlobalSearch}
-      region={region}
+      region={normalizedRegion}
       onRegionChange={setRegion}
       notifications={notifications}
       onReadAllNotifications={() => setNotifications((prev) => prev.map((item) => ({ ...item, read: true })))}
